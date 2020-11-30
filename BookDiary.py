@@ -116,8 +116,12 @@ class BookDiary(QWidget):
 
     def barcodeClicked(self):
         barcode = Barcode()
-        barcode.readBarcode()
-
+        isbn = barcode.readBarcode()
+        connectAPI = ConnectAPI()
+        books = connectAPI.search_book(isbn)['items']
+        self.titleInput.setText(books[0]['title'])
+        self.authorInput.setText(books[0]['author'])
+        self.publisherInput.setText( books[0]['publisher'])
 
     def addClicked(self):
         record = {'title': self.titleInput.text(), 'author':self.authorInput.text(),

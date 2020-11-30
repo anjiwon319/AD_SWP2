@@ -19,6 +19,7 @@ class Barcode:
 
                 barcode_data = d.data.decode("utf-8")
                 barcode_type = d.type
+                return barcode_data
 
                 cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 2)
 
@@ -36,7 +37,6 @@ class Barcode:
 
         cap.release()
         cv2.destroyAllWindows()
-        return barcode_data
 
 if __name__ == '__main__':
     barcode = Barcode()
