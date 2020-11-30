@@ -24,7 +24,7 @@ class BookDiary(QWidget):
         self.bookdiaryLabel.setAlignment(Qt.AlignCenter)
         font = self.bookdiaryLabel.font()
         font.setFamily('Courier New')
-        font.setPointSize(font.pointSize() + 8)
+        font.setPointSize(font.pointSize() + 12)
         self.bookdiaryLabel.setFont(font)
 
         # Layout
