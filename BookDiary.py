@@ -1,11 +1,12 @@
+import pickle
+
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QWidget
-from PyQt5.QtWidgets import QLayout, QGridLayout, QLabel, QBoxLayout
+from PyQt5.QtWidgets import QLayout, QGridLayout, QLabel
 from PyQt5.QtWidgets import QTextEdit, QLineEdit, QToolButton
 
 from barcode import Barcode
 from connectAPI import ConnectAPI
-from memoDB import MemoDB
 
 class BookDiary(QWidget):
 
@@ -13,7 +14,9 @@ class BookDiary(QWidget):
         super().__init__(parent)
         self.initUI()
         # Initialize bookDB database
-        self.bookDB = MemoDB('memoDB.dat')
+        self.memodb = []
+        self.filename = 'memoDB.dat'
+        self.readMemoDB()
 
     def initUI(self):
         # BookDiary logo label
@@ -112,13 +115,33 @@ class BookDiary(QWidget):
 
         self.setWindowTitle('DOKU - Book Diary')
 
+    def closeEvent(self, event):
+        self.writeMemoDB()
 
+    def readMemoDB(self):
+        try:
+            fH = open(self.filename, 'rb')
+        except FileNotFoundError as e:
+            self.memodb = []
+            return
+        try:
+            self.memodb = pickle.load(fH)
+        except:
+            pass
+        else:
+            pass
+        fH.close()
+
+    # write the data into person db
+    def writeMemoDB(self):
+        fH = open(self.filename, 'wb')
+        pickle.dump(self.memodb, fH)
+        fH.close()
 
     def barcodeClicked(self):
         barcode = Barcode()
-        isbn = barcode.readBarcode()
         connectAPI = ConnectAPI()
-        books = connectAPI.search_book(isbn)['items']
+        books = connectAPI.search_book(barcode.readBarcode())['items']
         self.titleInput.setText(books[0]['title'])
         self.authorInput.setText(books[0]['author'])
         self.publisherInput.setText( books[0]['publisher'])
@@ -126,12 +149,12 @@ class BookDiary(QWidget):
     def addClicked(self):
         record = {'title': self.titleInput.text(), 'author':self.authorInput.text(),
                   'publisher': self.publisherInput.text(), 'memo': self.memoInput.toPlainText()}
-        self.bookDB.memodb += [record]
+        self.memodb += [record]
         self.showClicked()
 
     def showClicked(self):
         self.memoInput.clear()
-        for b in self.bookDB.memodb:
+        for b in self.memodb:
             if b['title'] == self.titleInput.text() and b['author'] == self.authorInput.text() and \
                     b['publisher'] == self.publisherInput.text():
                 self.titleInput.setText(b['title'])
