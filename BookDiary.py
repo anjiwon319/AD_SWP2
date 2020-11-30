@@ -3,14 +3,19 @@ from PyQt5.QtWidgets import QApplication, QWidget
 from PyQt5.QtWidgets import QLayout, QGridLayout, QLabel, QBoxLayout
 from PyQt5.QtWidgets import QTextEdit, QLineEdit, QToolButton
 
+from barcode import Barcode
+from connectAPI import ConnectAPI
+from memoDB import MemoDB
+
 class BookDiary(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-
+        self.initUI()
         # Initialize bookDB database
-#        self.bookDB = BookDB('bookdb.txt')
+        self.bookDB = MemoDB('memoDB.dat')
 
+    def initUI(self):
         # BookDiary logo label
         self.bookdiaryLabel = QLabel("DOKU")
         self.bookdiaryLabel.setAlignment(Qt.AlignCenter)
@@ -65,7 +70,7 @@ class BookDiary(QWidget):
         font = self.barcodeButton.font()
         font.setPointSize(font.pointSize() + 3)
         self.barcodeButton.setFont(font)
-#        self.barcodeButton.clicked.connect(self.readBarcode)
+        self.barcodeButton.clicked.connect(self.barcodeClicked)
         recordLayout.addWidget(self.barcodeButton, 0, 6)
 
         # Button for add records
@@ -74,7 +79,7 @@ class BookDiary(QWidget):
         font = self.addButton.font()
         font.setPointSize(font.pointSize() + 3)
         self.addButton.setFont(font)
-#        self.addButton.clicked.connect(self.readBarcode)
+        self.addButton.clicked.connect(self.addClicked)
         recordLayout.addWidget(self.addButton, 3, 6)
 
         # Button for show records
@@ -83,7 +88,7 @@ class BookDiary(QWidget):
         font = self.showButton.font()
         font.setPointSize(font.pointSize() + 3)
         self.showButton.setFont(font)
-#        self.showButton.clicked.connect(self.readBarcode)
+        self.showButton.clicked.connect(self.showClicked)
         recordLayout.addWidget(self.showButton, 1, 5)
 
         # Input memo widget for user
@@ -106,6 +111,29 @@ class BookDiary(QWidget):
         self.setLayout(mainLayout)
 
         self.setWindowTitle('DOKU - Book Diary')
+
+
+
+    def barcodeClicked(self):
+        barcode = Barcode()
+        barcode.readBarcode()
+
+
+    def addClicked(self):
+        record = {'title': self.titleInput.text(), 'author':self.authorInput.text(),
+                  'publisher': self.publisherInput.text(), 'memo': self.memoInput.toPlainText()}
+        self.bookDB.memodb += [record]
+        self.showClicked()
+
+    def showClicked(self):
+        self.memoInput.clear()
+        for b in self.bookDB.memodb:
+            if b['title'] == self.titleInput.text() and b['author'] == self.authorInput.text() and \
+                    b['publisher'] == self.publisherInput.text():
+                self.titleInput.setText(b['title'])
+                self.authorInput.setText(b['author'])
+                self.publisherInput.setText(b['publisher'])
+                self.memoInput.setText(b['memo'])
 
 if __name__ == '__main__':
 
